@@ -1,0 +1,11 @@
+{
+  "name": "t3x-edge-glow",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node tests/test.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -3,8 +3,8 @@ const { React, h } = host;
 
 // 动效档位：省电约 10 秒后定格；混合前 10 秒平滑、之后 30fps 一直动；30fps 从头到尾 30fps。
 const MODES = {
-  eco: () => host.t("省电（10 秒后静止）", "Power saving (static after 10 sec)"),
-  hybrid: () => host.t("混合（10 秒后降到 30fps）", "Hybrid (drops to 30 fps after 10 sec)"),
+  eco: () => host.t("省电（10 秒后静止）", "Power saving (static after 10s)"),
+  hybrid: () => host.t("混合（10 秒后降到 30fps）", "Hybrid (30 fps after 10s)"),
   steady: () => host.t("30fps（一直动）", "30 fps (always animated)"),
 };
 const mode = () => {
@@ -113,20 +113,42 @@ function AttentionGlow({ awaiting, working, error, threadKey, runStatus }) {
 
 function Settings({ ui }) {
   host.useLang();
-  const current = host.storage.use("mode", "eco");
+  const saved = host.storage.use("mode", "eco");
+  const current = Object.hasOwn(MODES, saved) ? saved : "eco";
   return h(
-    "div",
-    { className: "t3x-glow-settings" },
-    h("span", { className: "t3x-glow-settings-label" }, host.t("动效档位", "Animation mode")),
-    Object.entries(MODES).map(([id, label]) =>
-      h(ui.Button, { key: id, size: "xs", variant: current === id ? "default" : "outline", onClick: () => host.storage.set("mode", id) }, label()),
-    ),
+    ui.Section,
+    { title: host.t("显示与性能", "Display & performance") },
+    h(ui.Row, {
+      title: host.t("动效档位", "Animation mode"),
+      description: host.t(
+        "控制边缘光亮起后的动画帧率与持续时长；系统开启“减弱动态效果”时会自动保持静止。",
+        "Control animation frame rate and duration while the edge glow is active. Stays static when system Reduced Motion is enabled.",
+      ),
+      control: h(
+        ui.Select,
+        {
+          value: current,
+          onValueChange: (v) => {
+            if (v && Object.hasOwn(MODES, v)) host.storage.set("mode", v);
+          },
+        },
+        h(
+          ui.SelectTrigger,
+          { size: "sm", className: "w-full sm:w-60", "aria-label": host.t("动效档位", "Animation mode") },
+          h(ui.SelectValue, null, MODES[current]()),
+        ),
+        h(
+          ui.SelectPopup,
+          { align: "end", alignItemWithTrigger: false },
+          Object.entries(MODES).map(([id, label]) => h(ui.SelectItem, { key: id, value: id }, label())),
+        ),
+      ),
+    }),
   );
 }
 
 host.register("chat.overlay", AttentionGlow);
 host.settings(Settings);
-host.style(".t3x-glow-settings{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.t3x-glow-settings-label{font-size:12px;color:var(--muted-foreground);margin-right:4px}");
 
 return () => {
   disposed = true;
