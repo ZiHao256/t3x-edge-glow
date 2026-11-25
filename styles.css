@@ -1,0 +1,300 @@
+/* 边缘光：只用宿主元素和 ::before / ::after，动画只动 opacity 与 transform。
+   默认（省电）循环动画只播前约 10 秒再定格：任何持续动画都会让 Chromium 每帧重绘整窗，
+   实测 120fps 时 GPU 进程约 45% CPU，30fps 约 18%，静态约 1%（重绘区域按外接矩形合并，拆成四条边也一样）。
+   扩展设置里可改为“混合”（前 10 秒平滑、之后 30fps 一直动）或“30fps”（一直 30fps），见 data-loop 规则。 */
+
+.t3x-attention-glow {
+  --t3x-glow-depth: 26px;
+  --t3x-glow-rim: transparent;
+  --t3x-glow-rim-strong: transparent;
+  --t3x-glow-base: transparent;
+  --t3x-glow-aura: transparent;
+  --t3x-glow-shimmer-a: transparent;
+  --t3x-glow-shimmer-b: transparent;
+  --t3x-glow-reduced-opacity: 0.5;
+
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  overflow: hidden;
+
+  /* 隐藏时保持 600ms 柔和淡出，结束后切换 visibility 释放合成层开销 */
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0s linear 600ms;
+  will-change: opacity;
+
+  /* 静态四边指数衰减遮罩：把所有光晕与流光严格限制在 0..26px 边缘带内，绝不染脏中间内容 */
+  mask-image:
+    linear-gradient(to bottom, #000 0px, rgba(0, 0, 0, 0.88) 2px, rgba(0, 0, 0, 0.56) 6px, rgba(0, 0, 0, 0.22) 13px, rgba(0, 0, 0, 0.05) 21px, transparent var(--t3x-glow-depth)),
+    linear-gradient(to top,    #000 0px, rgba(0, 0, 0, 0.88) 2px, rgba(0, 0, 0, 0.56) 6px, rgba(0, 0, 0, 0.22) 13px, rgba(0, 0, 0, 0.05) 21px, transparent var(--t3x-glow-depth)),
+    linear-gradient(to right,  #000 0px, rgba(0, 0, 0, 0.88) 2px, rgba(0, 0, 0, 0.56) 6px, rgba(0, 0, 0, 0.22) 13px, rgba(0, 0, 0, 0.05) 21px, transparent var(--t3x-glow-depth)),
+    linear-gradient(to left,   #000 0px, rgba(0, 0, 0, 0.88) 2px, rgba(0, 0, 0, 0.56) 6px, rgba(0, 0, 0, 0.22) 13px, rgba(0, 0, 0, 0.05) 21px, transparent var(--t3x-glow-depth));
+  mask-composite: add;
+
+  /* Layer 0：柔和贴边光学细边 + 紧贴边界的基础内晕，确保呼吸低谷与静息态呈柔和光晕而非生硬边框 */
+  box-shadow:
+    inset 0 0 0 1px var(--t3x-glow-rim),
+    inset 0 0 5px 0 var(--t3x-glow-rim),
+    inset 0 0 15px -1px var(--t3x-glow-base);
+}
+
+.t3x-attention-glow[data-state][data-visible="true"] {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 350ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0s;
+}
+
+/* Layer 1：主呼吸 / 脉冲光晕层（仅动画 opacity，在父级静态遮罩内形成柔和扩张感） */
+.t3x-attention-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--t3x-glow-aura);
+  box-shadow:
+    inset 0 0 0 1.5px var(--t3x-glow-rim-strong),
+    inset 0 0 8px 0 var(--t3x-glow-rim-strong);
+  opacity: 0;
+  will-change: opacity;
+}
+
+/* Layer 2：沿窗边游走的克制流光（旋转位于父级静态边缘遮罩之内，仅动画 transform 与 opacity） */
+.t3x-attention-glow::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150vmax;
+  height: 150vmax;
+  margin-left: -75vmax;
+  margin-top: -75vmax;
+  pointer-events: none;
+  opacity: 0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    var(--t3x-glow-shimmer-a) 22deg,
+    var(--t3x-glow-shimmer-b) 42deg,
+    var(--t3x-glow-shimmer-a) 62deg,
+    transparent 94deg,
+    transparent 180deg,
+    var(--t3x-glow-shimmer-a) 204deg,
+    var(--t3x-glow-shimmer-b) 222deg,
+    var(--t3x-glow-shimmer-a) 240deg,
+    transparent 272deg,
+    transparent 360deg
+  );
+  will-change: transform, opacity;
+}
+
+/* ---------- State 1: approval（琥珀金：需立即审批，沉稳 2.4s 呼吸 + 柔和流光） ---------- */
+.t3x-attention-glow[data-state="approval"] {
+  --t3x-glow-depth: 28px;
+  --t3x-glow-rim: rgba(217, 119, 6, 0.66);
+  --t3x-glow-rim-strong: rgba(245, 158, 11, 0.52);
+  --t3x-glow-base: rgba(245, 158, 11, 0.24);
+  --t3x-glow-aura: rgba(245, 158, 11, 0.28);
+  --t3x-glow-shimmer-a: rgba(245, 158, 11, 0.22);
+  --t3x-glow-shimmer-b: rgba(217, 119, 6, 0.52);
+  --t3x-glow-reduced-opacity: 0.65;
+}
+
+html.dark .t3x-attention-glow[data-state="approval"] {
+  --t3x-glow-rim: rgba(251, 191, 36, 0.72);
+  --t3x-glow-rim-strong: rgba(253, 224, 71, 0.44);
+  --t3x-glow-base: rgba(245, 158, 11, 0.28);
+  --t3x-glow-aura: rgba(245, 158, 11, 0.36);
+  --t3x-glow-shimmer-a: rgba(251, 191, 36, 0.26);
+  --t3x-glow-shimmer-b: rgba(254, 240, 138, 0.64);
+}
+
+/* 呼吸 4 次后停在低谷值；流光转 2 圈，最后 0.8s 边转边淡出。
+   有限动画都带 forwards：播完仍留在 getAnimations() 里，setAttention 才能把它们从头重播 */
+.t3x-attention-glow[data-state="approval"]::before {
+  opacity: 0.28;
+  animation: t3x-glow-breathe-approval 2.4s ease-in-out 4 forwards;
+}
+
+.t3x-attention-glow[data-state="approval"]::after {
+  opacity: 0.64;
+  animation:
+    t3x-glow-shimmer-orbit 5.6s linear 2 forwards,
+    t3x-glow-shimmer-fade 0.8s ease-out 10.4s forwards;
+}
+
+/* ---------- State 2: input（晴空蓝：等待用户回答，更舒缓的 3.0s 呼吸 + 轻盈慢流光） ---------- */
+.t3x-attention-glow[data-state="input"] {
+  --t3x-glow-depth: 25px;
+  --t3x-glow-rim: rgba(2, 132, 199, 0.56);
+  --t3x-glow-rim-strong: rgba(14, 165, 233, 0.42);
+  --t3x-glow-base: rgba(14, 165, 233, 0.17);
+  --t3x-glow-aura: rgba(14, 165, 233, 0.20);
+  --t3x-glow-shimmer-a: rgba(56, 189, 248, 0.16);
+  --t3x-glow-shimmer-b: rgba(2, 132, 199, 0.42);
+  --t3x-glow-reduced-opacity: 0.5;
+}
+
+html.dark .t3x-attention-glow[data-state="input"] {
+  --t3x-glow-rim: rgba(56, 189, 248, 0.64);
+  --t3x-glow-rim-strong: rgba(125, 211, 252, 0.38);
+  --t3x-glow-base: rgba(56, 189, 248, 0.22);
+  --t3x-glow-aura: rgba(56, 189, 248, 0.28);
+  --t3x-glow-shimmer-a: rgba(56, 189, 248, 0.20);
+  --t3x-glow-shimmer-b: rgba(186, 230, 253, 0.52);
+}
+
+.t3x-attention-glow[data-state="input"]::before {
+  opacity: 0.22;
+  animation: t3x-glow-breathe-input 3s ease-in-out 3 forwards;
+}
+
+.t3x-attention-glow[data-state="input"]::after {
+  opacity: 0.42;
+  animation:
+    t3x-glow-shimmer-orbit 8.4s linear 1 forwards,
+    t3x-glow-shimmer-fade 0.8s ease-out 7.6s forwards;
+}
+
+/* ---------- State 3: error（绯红：短促双拍提醒后沉降为微弱静态红边） ---------- */
+.t3x-attention-glow[data-state="error"] {
+  --t3x-glow-depth: 24px;
+  --t3x-glow-rim: rgba(220, 38, 38, 0.44);
+  --t3x-glow-rim-strong: rgba(239, 68, 68, 0.66);
+  --t3x-glow-base: rgba(220, 38, 38, 0.20);
+  --t3x-glow-aura: rgba(239, 68, 68, 0.34);
+  --t3x-glow-shimmer-a: rgba(244, 63, 94, 0.22);
+  --t3x-glow-shimmer-b: rgba(225, 29, 72, 0.54);
+  --t3x-glow-reduced-opacity: 0.34;
+}
+
+html.dark .t3x-attention-glow[data-state="error"] {
+  --t3x-glow-rim: rgba(248, 113, 113, 0.46);
+  --t3x-glow-rim-strong: rgba(251, 113, 133, 0.64);
+  --t3x-glow-base: rgba(239, 68, 68, 0.24);
+  --t3x-glow-aura: rgba(244, 63, 94, 0.42);
+  --t3x-glow-shimmer-a: rgba(244, 63, 94, 0.26);
+  --t3x-glow-shimmer-b: rgba(253, 164, 175, 0.60);
+}
+
+/* 静态终值与脉冲终值一致（0.26）。动画不绑定 data-visible：隐藏时随父层淡出播完，重现时由 setAttention 从头重播 */
+.t3x-attention-glow[data-state="error"]::before {
+  opacity: 0.26;
+  animation: t3x-glow-pulse-error 1.65s cubic-bezier(0.22, 1, 0.36, 1) 1 forwards;
+}
+
+.t3x-attention-glow[data-state="error"]::after {
+  animation: t3x-glow-shimmer-error 1.4s ease-out 1 forwards;
+}
+
+/* ---------- State 4: done（翡翠绿：愉悦抵达流光，随后沉入缓慢轻呼吸） ---------- */
+.t3x-attention-glow[data-state="done"] {
+  --t3x-glow-depth: 25px;
+  --t3x-glow-rim: rgba(5, 150, 105, 0.54);
+  --t3x-glow-rim-strong: rgba(16, 185, 129, 0.42);
+  --t3x-glow-base: rgba(16, 185, 129, 0.16);
+  --t3x-glow-aura: rgba(16, 185, 129, 0.20);
+  --t3x-glow-shimmer-a: rgba(52, 211, 153, 0.22);
+  --t3x-glow-shimmer-b: rgba(5, 150, 105, 0.48);
+  --t3x-glow-reduced-opacity: 0.46;
+}
+
+html.dark .t3x-attention-glow[data-state="done"] {
+  --t3x-glow-rim: rgba(52, 211, 153, 0.60);
+  --t3x-glow-rim-strong: rgba(110, 231, 183, 0.42);
+  --t3x-glow-base: rgba(16, 185, 129, 0.20);
+  --t3x-glow-aura: rgba(16, 185, 129, 0.28);
+  --t3x-glow-shimmer-a: rgba(52, 211, 153, 0.26);
+  --t3x-glow-shimmer-b: rgba(167, 243, 208, 0.60);
+}
+
+.t3x-attention-glow[data-state="done"]::before {
+  opacity: 0.22;
+  animation: t3x-glow-breathe-done 4.4s ease-in-out 2 forwards;
+}
+
+/* 抵达扫光播放一次并归零 */
+.t3x-attention-glow[data-state="done"]::after {
+  animation: t3x-glow-shimmer-arrive 1.9s cubic-bezier(0.16, 1, 0.3, 1) 1 forwards;
+}
+
+/* ---------- 循环模式（扩展设置里选“混合”或“30fps”时 data-loop=true）：不定格、流光不淡出，
+   出帧节奏由 t3GlowRestart 用 steps 控制在 30fps ---------- */
+.t3x-attention-glow[data-loop="true"][data-state="approval"]::before,
+.t3x-attention-glow[data-loop="true"][data-state="input"]::before,
+.t3x-attention-glow[data-loop="true"][data-state="done"]::before {
+  animation-iteration-count: infinite;
+}
+
+.t3x-attention-glow[data-loop="true"][data-state="approval"]::after {
+  animation: t3x-glow-shimmer-orbit 5.6s linear infinite;
+}
+
+.t3x-attention-glow[data-loop="true"][data-state="input"]::after {
+  animation: t3x-glow-shimmer-orbit 8.4s linear infinite;
+}
+
+/* ---------- Effect 1 Keyframes（仅 opacity / transform） ---------- */
+@keyframes t3x-glow-breathe-approval {
+  0%, 100% { opacity: 0.28; }
+  50%      { opacity: 0.96; }
+}
+
+@keyframes t3x-glow-breathe-input {
+  0%, 100% { opacity: 0.22; }
+  50%      { opacity: 0.74; }
+}
+
+@keyframes t3x-glow-breathe-done {
+  0%, 100% { opacity: 0.22; }
+  45%      { opacity: 0.68; }
+}
+
+@keyframes t3x-glow-pulse-error {
+  0%   { opacity: 0.30; }
+  16%  { opacity: 1; }
+  34%  { opacity: 0.38; }
+  52%  { opacity: 0.88; }
+  100% { opacity: 0.26; }
+}
+
+@keyframes t3x-glow-shimmer-orbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes t3x-glow-shimmer-fade {
+  to { opacity: 0; }
+}
+
+@keyframes t3x-glow-shimmer-arrive {
+  0%   { opacity: 0;    transform: rotate(-35deg); }
+  24%  { opacity: 0.82; transform: rotate(45deg); }
+  68%  { opacity: 0.42; transform: rotate(155deg); }
+  100% { opacity: 0;    transform: rotate(225deg); }
+}
+
+@keyframes t3x-glow-shimmer-error {
+  0%   { opacity: 0;    transform: rotate(0deg); }
+  18%  { opacity: 0.65; transform: rotate(36deg); }
+  55%  { opacity: 0.30; transform: rotate(98deg); }
+  100% { opacity: 0;    transform: rotate(145deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 减弱动态效果：静态边缘光晕，仍允许 data-visible 淡入淡出 */
+  .t3x-attention-glow::before {
+    animation: none !important;
+    opacity: var(--t3x-glow-reduced-opacity, 0.5) !important;
+  }
+
+  .t3x-attention-glow::after {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}

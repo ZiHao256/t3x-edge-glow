@@ -1,0 +1,13 @@
+{
+  "id": "edge-glow",
+  "apiVersion": 1,
+  "name": "边缘光",
+  "version": "1.0.0",
+  "description": "需要审批、等你回答、出错或在后台跑完时，窗口边缘亮起对应颜色的光。",
+  "author": "t3-extensions",
+  "repository": "https://github.com/ZiHao256/t3x-edge-glow",
+  "repositoryId": 1471215292,
+  "locales": { "en": { "name": "Edge glow", "description": "Lights up the window edge when an approval is needed, the agent is waiting for your answer, an error occurs, or a background run finishes." } },
+  "permissions": ["ui"],
+  "entries": { "web": ["logic.js", "web.js"], "styles": ["styles.css"] }
+}
