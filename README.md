@@ -8,6 +8,13 @@
 
 [T3 Code Extensions](https://github.com/ZiHao256/t3code-extensions) 的扩展，T3 Code Extensions 是 [T3 Code](https://github.com/pingdotgg/t3code) 的非官方扩展宿主。在 设置 → 扩展 →「浏览」里安装，或者把 `https://github.com/ZiHao256/t3x-edge-glow` 粘贴到那里的链接框。「检查更新」取本仓库的最新 Release，确认后安装。
 
+## 功能
+
+- 四种状态四种颜色，同时有几种时只亮最急的一种：需要审批（琥珀色）、等你回答（蓝色）、出错（红色）、在后台跑完（绿色）。
+- “在后台跑完”指窗口不在前台时会话正常结束；中断、失败、断开连接都不算。下一轮开始后绿光熄灭。
+- 主聊天和 side chat 都会触发，取两边最急的那个。
+- 设置 → 扩展 → 边缘光 →「设置」里选动效档位：省电（10 秒后静止）、混合（10 秒后降到 30fps）、30fps（一直动）。改了立刻作用到正在亮的光。
+
 ## 让 agent 安装
 
 把下面的提示词发给 Claude Code、Codex 等 coding agent：
