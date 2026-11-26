@@ -1,26 +1,16 @@
-# Edge glow（边缘光）
+**简体中文** | [English](README.en.md)
 
-Lights up the window edge when an approval is needed, the agent is waiting for your answer, an error occurs, or a background run finishes.
+# 边缘光
 
 需要审批、等你回答、出错或在后台跑完时，窗口边缘亮起对应颜色的光。
 
-![Window edge glow: approval needed (amber), background run finished (green), error (red)](docs/edge-glow.png)
+![窗口边缘光：需要审批（琥珀色）、后台跑完（绿色）、出错（红色）](docs/edge-glow.png)
 
-An extension for [T3 Code Extensions](https://github.com/ZiHao256/t3code-extensions), an unofficial extension host for [T3 Code](https://github.com/pingdotgg/t3code). Install it in Settings → Extensions → Browse, or paste `https://github.com/ZiHao256/t3x-edge-glow` into the URL field there. "Check for updates" offers this repository's latest release, installed after you confirm.
+[T3 Code Extensions](https://github.com/ZiHao256/t3code-extensions) 的扩展，T3 Code Extensions 是 [T3 Code](https://github.com/pingdotgg/t3code) 的非官方扩展宿主。在 设置 → 扩展 →「浏览」里安装，或者把 `https://github.com/ZiHao256/t3x-edge-glow` 粘贴到那里的链接框。「检查更新」取本仓库的最新 Release，确认后安装。
 
-[T3 Code Extensions](https://github.com/ZiHao256/t3code-extensions) 的扩展。在 设置 → 扩展 →“浏览”里安装，或者把 `https://github.com/ZiHao256/t3x-edge-glow` 粘贴到那里的链接框。“检查更新”取本仓库的最新 Release。
+## 让 agent 安装
 
-## Install with an agent / 让 agent 安装
-
-Paste this to Claude Code, Codex or another coding agent. 把下面的提示词发给 Claude Code、Codex 等 coding agent。
-
-```text
-Install the T3 Code extension "Edge glow" (https://github.com/ZiHao256/t3x-edge-glow) on this Mac.
-1. Check that T3 Code Extensions is installed. If it isn't, install it first by following the "Install with an agent" section of https://github.com/ZiHao256/t3code-extensions, and ask me before quitting T3 Code.
-2. Open ~/Applications/T3 Code Extensions.app, go to Settings → Extensions → Browse, and install "t3x-edge-glow" from the community list, or paste https://github.com/ZiHao256/t3x-edge-glow into the link field and click Add. In the confirmation dialog, check that the source is ZiHao256/t3x-edge-glow before confirming.
-3. In the Installed tab, make sure it is enabled and tell me its version.
-If you can't operate the app's UI, do step 1, then tell me exactly what to click for steps 2 and 3.
-```
+把下面的提示词发给 Claude Code、Codex 等 coding agent：
 
 ```text
 帮我在这台 Mac 上给 T3 Code 装「边缘光」扩展（https://github.com/ZiHao256/t3x-edge-glow）。
@@ -30,22 +20,20 @@ If you can't operate the app's UI, do step 1, then tell me exactly what to click
 如果你没法操作应用界面，做完第 1 步后，把第 2、3 步具体点哪里告诉我。
 ```
 
-## Requirements / 依赖
-
-`apiVersion` 2: needs a T3 Code Extensions host that supports it. Older hosts refuse to install this version.
+## 依赖
 
 只依赖宿主提供的 `host` 接口（`apiVersion` 2），旧版宿主会拒绝安装。
 
-## Development / 开发
+## 开发
 
-- `npm test` runs the tests (Node 22+, no dependencies). 运行测试，不依赖 npm 包。
-- To try changes: Settings → Extensions → Add local extension, pick this folder, then click refresh on its card after each edit. 试改动：设置 → 扩展 →“添加本地扩展”选本仓库目录，改完点卡片上的刷新。
+- `npm test` 运行测试（Node 22+，不依赖 npm 包）。
+- 试改动：设置 → 扩展 →「添加本地扩展」选本仓库目录，改完点卡片上的刷新。
 
-## Release / 发版
+## 发版
 
-1. Change the code, bump `version` in `plugin.json`, run `npm test`, and commit. 改代码和 `plugin.json` 的 `version`，跑测试，提交。
-2. Tag that commit `v<version>`, push it with the tag, and publish a GitHub release ("check for updates" reads the latest release). 在这个提交上打 `v<version>` 标签，连标签一起推送并发布 Release（“检查更新”看的是最新 Release）。
+1. 改代码和 `plugin.json` 的 `version`，跑 `npm test`，提交。
+2. 在这个提交上打 `v<version>` 标签，连标签一起推送并发布 GitHub Release（「检查更新」看的是最新 Release）。
 
-## License
+## 许可
 
 MIT
