@@ -4,7 +4,7 @@
 
 Lights up the window edge when an approval is needed, the agent is waiting for your answer, an error occurs, or a background run finishes.
 
-![Window edge glow: approval needed (amber), background run finished (green), error (red)](docs/edge-glow.png)
+![Window edge glow: approval needed (amber), waiting for your answer (blue), error (red), background run finished (green)](docs/edge-glow.png)
 
 An extension for [T3 Code Extensions](https://github.com/ZiHao256/t3code-extensions), an unofficial extension host for [T3 Code](https://github.com/pingdotgg/t3code). Install it in Settings → Extensions → Browse, or paste `https://github.com/ZiHao256/t3x-edge-glow` into the URL field there. "Check for updates" offers this repository's latest release, installed after you confirm.
 
@@ -14,6 +14,8 @@ An extension for [T3 Code Extensions](https://github.com/ZiHao256/t3code-extensi
 - "Finished in the background" means the thread ended normally while the window was in the background; interruptions, failures and disconnects don't count. The green glow goes away when the next turn starts.
 - Both the main chat and side chat can trigger it; the more urgent of the two wins.
 - Pick the animation mode in Settings → Extensions → Edge glow → Settings: power saving (static after 10 s), hybrid (30 fps after 10 s) or 30 fps (always animated). Changes apply to a glow that is already lit.
+
+![Edge glow settings: the animation mode, with power saving, hybrid and 30 fps](docs/edge-glow-settings.png)
 
 ## Install with an agent
 
